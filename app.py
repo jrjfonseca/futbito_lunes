@@ -212,7 +212,7 @@ st.markdown("""
 # Checkbox para modo móvil con mejor estilo
 col_check, col_info = st.columns([3, 1])
 with col_check:
-    is_mobile = st.checkbox("📱 Modo Móvil Optimizado", value=False, 
+    is_mobile = st.checkbox("📱 Modo Móvil Optimizado", value=True, 
                            help="✨ Activa para una experiencia optimizada en dispositivos móviles\n\n🚀 Beneficios:\n• Layout de una sola columna\n• Botones más grandes\n• Mejor espaciado\n• Interfaz más táctil")
 with col_info:
     if is_mobile:
@@ -222,6 +222,92 @@ with col_info:
 
 if is_mobile:
     # Layout de una sola columna para móviles
+    
+    # SECCIÓN DE AGREGAR JUGADORES (MÓVIL)
+    st.header("➕ Agregar Jugadores")
+    
+    # Carga rápida de jugadores - Prioritaria en móvil
+    col_fast1, col_fast2 = st.columns(2)
+    
+    with col_fast1:
+        if st.button("🚀 Cargar Todos", type="primary", use_container_width=True):
+            st.session_state.players = DEFAULT_PLAYERS.copy()
+            st.success("¡Todos los jugadores cargados!")
+            st.rerun()
+    
+    with col_fast2:
+        if st.button("🗑️ Limpiar Todos", type="secondary", use_container_width=True):
+            st.session_state.players = {}
+            if 'team_results' in st.session_state:
+                del st.session_state.team_results
+            st.rerun()
+    
+    # Contador de progreso
+    if st.session_state.players:
+        progress = len(st.session_state.players) / 10
+        st.progress(progress)
+        st.write(f"**Jugadores:** {len(st.session_state.players)}/10")
+        if len(st.session_state.players) >= 10:
+            st.success("🎯 ¡Listos para generar equipos!")
+        else:
+            remaining = 10 - len(st.session_state.players)
+            st.info(f"⏰ Faltan {remaining} jugadores")
+    else:
+        st.progress(0)
+        st.write("**Jugadores:** 0/10")
+        st.warning("📝 Agrega jugadores para empezar")
+    
+    # Selector para cargar jugadores individuales
+    available_players = [name for name in DEFAULT_PLAYERS.keys() if name not in st.session_state.players]
+    
+    if available_players:
+        st.subheader("📋 Cargar Jugador Individual")
+        selected_default_player = st.selectbox(
+            "Seleccionar jugador predefinido:", 
+            ["Selecciona un jugador..."] + available_players,
+            key="mobile_default_player"
+        )
+        
+        if selected_default_player != "Selecciona un jugador..." and st.button(f"➕ Agregar {selected_default_player}", key="mobile_add_preset", use_container_width=True):
+            st.session_state.players[selected_default_player] = DEFAULT_PLAYERS[selected_default_player].copy()
+            st.success(f"¡{selected_default_player} agregado!")
+            st.rerun()
+    
+    # Agregar jugador personalizado
+    with st.expander("✨ Crear Jugador Personalizado", expanded=False):
+        player_name = st.text_input("Nombre del Jugador", key="mobile_player_name")
+        
+        st.write("**Métricas (1-10):**")
+        col_m1, col_m2 = st.columns(2)
+        
+        with col_m1:
+            speed = st.slider("🏃 Velocidad", 1, 10, 5, key="mobile_speed")
+            shooting = st.slider("⚽ Disparo", 1, 10, 5, key="mobile_shooting")
+            leadership = st.slider("👑 Liderazgo", 1, 10, 5, key="mobile_leadership")
+        
+        with col_m2:
+            strength = st.slider("💪 Fuerza", 1, 10, 5, key="mobile_strength")
+            dribble = st.slider("🎯 Regate", 1, 10, 5, key="mobile_dribble")
+        
+        if st.button("➕ Crear Jugador", type="primary", use_container_width=True, key="mobile_create"):
+            if player_name and player_name not in st.session_state.players:
+                st.session_state.players[player_name] = {
+                    'speed': speed,
+                    'strength': strength,
+                    'shooting': shooting,
+                    'dribble': dribble,
+                    'liderazgo': leadership
+                }
+                st.success(f"¡{player_name} creado!")
+                st.rerun()
+            elif player_name in st.session_state.players:
+                st.error("Este jugador ya existe")
+            else:
+                st.error("Por favor ingresa un nombre")
+    
+    st.markdown("---")
+    
+    # SECCIÓN DE LISTA DE JUGADORES (MÓVIL)
     st.header("👥 Lista de Jugadores")
     
     if st.session_state.players:
@@ -267,16 +353,27 @@ if is_mobile:
                     st.success(f"{selected_player} eliminado")
                     st.rerun()
     else:
-        st.info("📱 No hay jugadores agregados. Usa la barra lateral para agregar jugadores.")
+        st.info("📱 No hay jugadores agregados. Agrega jugadores arriba para empezar.")
     
-    # Configuración móvil
-    st.header("⚙️ Configuración")
+    st.markdown("---")
+    
+    # SECCIÓN DE GENERACIÓN DE EQUIPOS (MÓVIL)
+    st.header("🎲 Generar Equipos")
     
     if len(st.session_state.players) >= 10:
-        tolerance = st.slider("Tolerancia de Diferencia", 0, 5, 1, 
-                            help="Permite variaciones en la diferencia de puntos para mayor variedad")
+        # Configuración en móvil más compacta
+        col_config1, col_config2 = st.columns([2, 1])
         
-        if st.button("🎲 Generar Equipos", type="primary", use_container_width=True):
+        with col_config1:
+            tolerance = st.slider("⚙️ Tolerancia", 0, 5, 1, 
+                                help="Permite variaciones para mayor variedad")
+        
+        with col_config2:
+            st.write("**Configuración:**")
+            st.write(f"Tolerancia: {tolerance}")
+        
+        # Botón de generar equipos prominente
+        if st.button("🎲 GENERAR EQUIPOS", type="primary", use_container_width=True, key="mobile_generate"):
             # Team generation algorithm (same as desktop)
             def team_score(team, players_data):
                 return sum(sum(players_data[name].values()) for name in team)
@@ -327,16 +424,25 @@ if is_mobile:
                 'actual_diff': actual_diff
             }
             
-            st.success("¡Equipos generados!")
+            st.success("¡Equipos generados! 🎉")
+            st.balloons()
     
     elif len(st.session_state.players) > 0:
-        st.warning(f"Necesitas al menos 10 jugadores. Tienes {len(st.session_state.players)}")
-    
-    if st.button("🗑️ Limpiar Todos", type="secondary", use_container_width=True):
-        st.session_state.players = {}
-        if 'team_results' in st.session_state:
-            del st.session_state.team_results
-        st.rerun()
+        remaining = 10 - len(st.session_state.players)
+        st.warning(f"⏰ Necesitas {remaining} jugadores más para generar equipos")
+        
+        # Sugerencia rápida
+        if st.button("🚀 Completar con Predefinidos", use_container_width=True):
+            # Agregar jugadores predefinidos hasta completar 10
+            available = [name for name in DEFAULT_PLAYERS.keys() if name not in st.session_state.players]
+            needed = min(remaining, len(available))
+            for i in range(needed):
+                player_name = available[i]
+                st.session_state.players[player_name] = DEFAULT_PLAYERS[player_name].copy()
+            st.success(f"¡{needed} jugadores agregados! Ahora puedes generar equipos.")
+            st.rerun()
+    else:
+        st.info("📝 Agrega al menos 10 jugadores para generar equipos balanceados")
 
 else:
     # Layout de escritorio (dos columnas)
@@ -552,19 +658,21 @@ with st.expander("📖 Instrucciones y Ayuda"):
     st.markdown("""
     ### 🚀 Cómo usar esta aplicación:
     
-    1. **📱 Modo Móvil**: Activa el "Modo Móvil Optimizado" para una mejor experiencia en tu teléfono
+    1. **📱 Modo Móvil**: ACTIVADO por defecto para la mejor experiencia en todos los dispositivos
     
-    2. **⚡ Carga Rápida**: Usa "Cargar Todos los Jugadores" para agregar automáticamente los 10 jugadores predefinidos
+    2. **⚡ Inicio Rápido**: Haz clic en "🚀 Cargar Todos" para agregar automáticamente los 10 jugadores predefinidos
     
-    3. **➕ Agregar Jugadores**: Usa la barra lateral para agregar jugadores manualmente con sus métricas (1-10 puntos cada una)
+    3. **➕ Agregar Jugadores**: Todo centralizado en la pantalla principal - fácil acceso en móviles
     
-    4. **✏️ Editar/Eliminar**: Modifica o elimina jugadores existentes en la sección principal
+    4. **📋 Carga Individual**: Selecciona jugadores predefinidos uno por uno si prefieres
     
-    5. **🎲 Generar Equipos**: Una vez que tengas 10+ jugadores, podrás generar equipos balanceados
+    5. **✨ Crear Personalizados**: Usa el expandible para crear jugadores con métricas propias
     
-    6. **⚙️ Tolerancia**: Ajusta la tolerancia para permitir más variedad en los equipos generados
+    6. **✏️ Editar/Eliminar**: Modifica jugadores existentes en la lista
     
-    7. **🏆 Resultados**: Los equipos se mostrarán con sus promedios y comparaciones detalladas
+    7. **🎲 Generar Equipos**: Botón prominente una vez que tengas 10+ jugadores
+    
+    8. **🏆 Resultados**: Los equipos se muestran optimizados para tu dispositivo
     
     ### 📊 Métricas (1-10 puntos):
     - **🏃 Velocidad**: Rapidez y aceleración del jugador
@@ -573,11 +681,13 @@ with st.expander("📖 Instrucciones y Ayuda"):
     - **🎯 Regate**: Habilidad técnica y control del balón
     - **👑 Liderazgo**: Capacidad de liderazgo y comunicación en el campo
     
-    ### 📱 Características Móviles:
-    - **Layout optimizado** para pantallas pequeñas
-    - **Botones más grandes** para facilitar el toque
-    - **Interfaz simplificada** para mejor navegación
-    - **Texto compacto** con emojis para fácil lectura
+    ### 📱 Características Móviles (Activado por Defecto):
+    - **Todo en pantalla principal** - No necesitas usar el sidebar
+    - **Funciones centralizadas** - Agregar, editar y generar en un solo lugar
+    - **Botones prominentes** - Fáciles de tocar en pantallas pequeñas
+    - **Progreso visual** - Barra de progreso y contadores claros
+    - **Navegación intuitiva** - Flujo lógico de arriba hacia abajo
+    - **Sugerencias inteligentes** - Botón de completar automático cuando faltan jugadores
     
     ### 👥 Jugadores Predefinidos:
     **David**: V=7, F=6, D=7, R=7, L=6 | **Dan**: V=4, F=8, D=6, R=5, L=3
