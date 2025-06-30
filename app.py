@@ -104,6 +104,20 @@ st.title("⚽ Generador de Equipos Balanceados 5v5")
 st.markdown("### 🤖 *Cuando el humano falla, vente al verdadero algoritmo.*")
 st.markdown("---")
 
+# Base de datos de jugadores predefinida
+DEFAULT_PLAYERS = {
+    "David": {"speed": 7, "strength": 6, "shooting": 7, "dribble": 7, "liderazgo": 6},
+    "Dan": {"speed": 4, "strength": 8, "shooting": 6, "dribble": 5, "liderazgo": 3},
+    "Diego": {"speed": 7, "strength": 7, "shooting": 5, "dribble": 5, "liderazgo": 5},
+    "Morales": {"speed": 6, "strength": 6, "shooting": 6, "dribble": 7, "liderazgo": 6},
+    "Buco": {"speed": 5, "strength": 6, "shooting": 6, "dribble": 5, "liderazgo": 9},
+    "Joao": {"speed": 5, "strength": 6, "shooting": 6, "dribble": 5, "liderazgo": 4},
+    "Nestor": {"speed": 5, "strength": 5, "shooting": 5, "dribble": 5, "liderazgo": 5},
+    "Nico": {"speed": 6, "strength": 6, "shooting": 8, "dribble": 6, "liderazgo": 4},
+    "Ribery": {"speed": 8, "strength": 6, "shooting": 8, "dribble": 8, "liderazgo": 7},
+    "Sergio": {"speed": 7, "strength": 7, "shooting": 6, "dribble": 7, "liderazgo": 5}
+}
+
 # Initialize session state for players
 if 'players' not in st.session_state:
     st.session_state.players = {}
@@ -140,6 +154,46 @@ with st.sidebar:
             st.error("Este jugador ya existe")
         else:
             st.error("Por favor ingresa un nombre")
+    
+    st.markdown("---")
+    
+    st.subheader("⚡ Carga Rápida")
+    
+    # Botón para cargar todos los jugadores por defecto
+    if st.button("🚀 Cargar Todos los Jugadores", type="secondary", use_container_width=True):
+        st.session_state.players = DEFAULT_PLAYERS.copy()
+        st.success("¡Todos los jugadores cargados!")
+        st.rerun()
+    
+    # Selector para cargar jugadores individuales
+    st.write("**Cargar jugador individual:**")
+    available_players = [name for name in DEFAULT_PLAYERS.keys() if name not in st.session_state.players]
+    
+    if available_players:
+        selected_default_player = st.selectbox(
+            "Seleccionar jugador:", 
+            [""] + available_players,
+            key="default_player_select"
+        )
+        
+        if selected_default_player and st.button(f"➕ Agregar {selected_default_player}", use_container_width=True):
+            st.session_state.players[selected_default_player] = DEFAULT_PLAYERS[selected_default_player].copy()
+            st.success(f"¡{selected_default_player} agregado!")
+            st.rerun()
+    else:
+        if len(st.session_state.players) >= len(DEFAULT_PLAYERS):
+            st.info("✅ Todos los jugadores ya están cargados")
+        else:
+            st.info("ℹ️ Jugadores disponibles ya agregados")
+    
+    # Mostrar resumen de jugadores cargados
+    if st.session_state.players:
+        st.write(f"**Jugadores actuales:** {len(st.session_state.players)}/10")
+        if len(st.session_state.players) >= 10:
+            st.success("🎯 ¡Listos para generar equipos!")
+        else:
+            remaining = 10 - len(st.session_state.players)
+            st.warning(f"⏰ Faltan {remaining} jugadores para generar equipos")
 
 # Main content - Layout responsive
 # Detección automática de dispositivo móvil (JavaScript)
@@ -500,15 +554,17 @@ with st.expander("📖 Instrucciones y Ayuda"):
     
     1. **📱 Modo Móvil**: Activa el "Modo Móvil Optimizado" para una mejor experiencia en tu teléfono
     
-    2. **➕ Agregar Jugadores**: Usa la barra lateral para agregar jugadores con sus métricas (1-10 puntos cada una)
+    2. **⚡ Carga Rápida**: Usa "Cargar Todos los Jugadores" para agregar automáticamente los 10 jugadores predefinidos
     
-    3. **✏️ Editar/Eliminar**: Modifica o elimina jugadores existentes en la sección principal
+    3. **➕ Agregar Jugadores**: Usa la barra lateral para agregar jugadores manualmente con sus métricas (1-10 puntos cada una)
     
-    4. **🎲 Generar Equipos**: Una vez que tengas 10+ jugadores, podrás generar equipos balanceados
+    4. **✏️ Editar/Eliminar**: Modifica o elimina jugadores existentes en la sección principal
     
-    5. **⚙️ Tolerancia**: Ajusta la tolerancia para permitir más variedad en los equipos generados
+    5. **🎲 Generar Equipos**: Una vez que tengas 10+ jugadores, podrás generar equipos balanceados
     
-    6. **🏆 Resultados**: Los equipos se mostrarán con sus promedios y comparaciones detalladas
+    6. **⚙️ Tolerancia**: Ajusta la tolerancia para permitir más variedad en los equipos generados
+    
+    7. **🏆 Resultados**: Los equipos se mostrarán con sus promedios y comparaciones detalladas
     
     ### 📊 Métricas (1-10 puntos):
     - **🏃 Velocidad**: Rapidez y aceleración del jugador
@@ -522,6 +578,19 @@ with st.expander("📖 Instrucciones y Ayuda"):
     - **Botones más grandes** para facilitar el toque
     - **Interfaz simplificada** para mejor navegación
     - **Texto compacto** con emojis para fácil lectura
+    
+    ### 👥 Jugadores Predefinidos:
+    **David**: V=7, F=6, D=7, R=7, L=6 | **Dan**: V=4, F=8, D=6, R=5, L=3
+    
+    **Diego**: V=7, F=7, D=5, R=5, L=5 | **Morales**: V=6, F=6, D=6, R=7, L=6
+    
+    **Buco**: V=5, F=6, D=6, R=5, L=9 | **Joao**: V=5, F=6, D=6, R=5, L=4
+    
+    **Nestor**: V=5, F=5, D=5, R=5, L=5 | **Nico**: V=6, F=6, D=8, R=6, L=4
+    
+    **Ribery**: V=8, F=6, D=8, R=8, L=7 | **Sergio**: V=7, F=7, D=6, R=7, L=5
+    
+    *V=Velocidad, F=Fuerza, D=Disparo, R=Regate, L=Liderazgo*
     
     ### 🤖 Algoritmo:
     El sistema calcula todas las combinaciones posibles y selecciona la más balanceada,
