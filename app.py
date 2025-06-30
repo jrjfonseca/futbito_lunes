@@ -340,73 +340,73 @@ else:
             st.info("No hay jugadores agregados. Usa la barra lateral para agregar jugadores.")
 
     with col2:
-    st.header("⚙️ Configuración")
-    
-    if len(st.session_state.players) >= 10:
-        tolerance = st.slider("Tolerancia de Diferencia", 0, 5, 1, 
-                            help="Permite variaciones en la diferencia de puntos para mayor variedad")
+        st.header("⚙️ Configuración")
         
-        if st.button("🎲 Generar Equipos", type="primary", use_container_width=True):
-            # Team generation algorithm
-            def team_score(team, players_data):
-                return sum(sum(players_data[name].values()) for name in team)
+        if len(st.session_state.players) >= 10:
+            tolerance = st.slider("Tolerancia de Diferencia", 0, 5, 1, 
+                                help="Permite variaciones en la diferencia de puntos para mayor variedad")
             
-            def compute_team_averages(team, df):
-                team_data = df.loc[team]
-                return team_data.mean()
-            
-            players = list(st.session_state.players.keys())
-            df = pd.DataFrame.from_dict(st.session_state.players, orient='index')
-            
-            best_diff = float('inf')
-            best_splits = []
-            
-            # First pass: find the minimum difference
-            for combo in itertools.combinations(players, 5):
-                team_a = list(combo)
-                team_b = [p for p in players if p not in team_a]
-                diff = abs(team_score(team_a, st.session_state.players) - team_score(team_b, st.session_state.players))
-                if diff < best_diff:
-                    best_diff = diff
-            
-            # Second pass: collect all combinations within tolerance
-            for combo in itertools.combinations(players, 5):
-                team_a = list(combo)
-                team_b = [p for p in players if p not in team_a]
-                diff = abs(team_score(team_a, st.session_state.players) - team_score(team_b, st.session_state.players))
-                if diff <= best_diff + tolerance:
-                    best_splits.append((team_a, team_b, diff))
-            
-            # Randomly select one of the best combinations
-            team_a, team_b, actual_diff = random.choice(best_splits)
-            
-            # Compute team averages
-            team_a_avg = compute_team_averages(team_a, df)
-            team_b_avg = compute_team_averages(team_b, df)
-            team_a_total = team_score(team_a, st.session_state.players)
-            team_b_total = team_score(team_b, st.session_state.players)
-            
-            # Store results in session state
-            st.session_state.team_results = {
-                'team_a': team_a,
-                'team_b': team_b,
-                'team_a_avg': team_a_avg,
-                'team_b_avg': team_b_avg,
-                'team_a_total': team_a_total,
-                'team_b_total': team_b_total,
-                'actual_diff': actual_diff
-            }
-            
-            st.success("¡Equipos generados!")
-    
-    elif len(st.session_state.players) > 0:
-        st.warning(f"Necesitas al menos 10 jugadores. Tienes {len(st.session_state.players)}")
-    
-    if st.button("🗑️ Limpiar Todos", type="secondary", use_container_width=True):
-        st.session_state.players = {}
-        if 'team_results' in st.session_state:
-            del st.session_state.team_results
-        st.rerun()
+            if st.button("🎲 Generar Equipos", type="primary", use_container_width=True):
+                # Team generation algorithm
+                def team_score(team, players_data):
+                    return sum(sum(players_data[name].values()) for name in team)
+                
+                def compute_team_averages(team, df):
+                    team_data = df.loc[team]
+                    return team_data.mean()
+                
+                players = list(st.session_state.players.keys())
+                df = pd.DataFrame.from_dict(st.session_state.players, orient='index')
+                
+                best_diff = float('inf')
+                best_splits = []
+                
+                # First pass: find the minimum difference
+                for combo in itertools.combinations(players, 5):
+                    team_a = list(combo)
+                    team_b = [p for p in players if p not in team_a]
+                    diff = abs(team_score(team_a, st.session_state.players) - team_score(team_b, st.session_state.players))
+                    if diff < best_diff:
+                        best_diff = diff
+                
+                # Second pass: collect all combinations within tolerance
+                for combo in itertools.combinations(players, 5):
+                    team_a = list(combo)
+                    team_b = [p for p in players if p not in team_a]
+                    diff = abs(team_score(team_a, st.session_state.players) - team_score(team_b, st.session_state.players))
+                    if diff <= best_diff + tolerance:
+                        best_splits.append((team_a, team_b, diff))
+                
+                # Randomly select one of the best combinations
+                team_a, team_b, actual_diff = random.choice(best_splits)
+                
+                # Compute team averages
+                team_a_avg = compute_team_averages(team_a, df)
+                team_b_avg = compute_team_averages(team_b, df)
+                team_a_total = team_score(team_a, st.session_state.players)
+                team_b_total = team_score(team_b, st.session_state.players)
+                
+                # Store results in session state
+                st.session_state.team_results = {
+                    'team_a': team_a,
+                    'team_b': team_b,
+                    'team_a_avg': team_a_avg,
+                    'team_b_avg': team_b_avg,
+                    'team_a_total': team_a_total,
+                    'team_b_total': team_b_total,
+                    'actual_diff': actual_diff
+                }
+                
+                st.success("¡Equipos generados!")
+        
+        elif len(st.session_state.players) > 0:
+            st.warning(f"Necesitas al menos 10 jugadores. Tienes {len(st.session_state.players)}")
+        
+        if st.button("🗑️ Limpiar Todos", type="secondary", use_container_width=True):
+            st.session_state.players = {}
+            if 'team_results' in st.session_state:
+                del st.session_state.team_results
+            st.rerun()
 
 # Display team results
 if 'team_results' in st.session_state:
