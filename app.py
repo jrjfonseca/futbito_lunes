@@ -303,60 +303,60 @@ with tab3:
     if len(st.session_state.players) >= 10:
         # Botón compacto para generar equipos
         if st.button("🎲 GENERAR EQUIPOS", type="primary", use_container_width=True, key="generate_main"):
-        # Algoritmo de generación de equipos
-        def team_score(team, players_data):
-            return sum(sum(players_data[name].values()) for name in team)
-        
-        def compute_team_averages(team, df):
-            team_data = df.loc[team]
-            return team_data.mean()
-        
-        players = list(st.session_state.players.keys())
-        df = pd.DataFrame.from_dict(st.session_state.players, orient='index')
-        
-        best_diff = float('inf')
-        best_splits = []
-        
-        # Encontrar la mejor combinación
-        for combo in itertools.combinations(players, 5):
-            team_a = list(combo)
-            team_b = [p for p in players if p not in team_a]
-            diff = abs(team_score(team_a, st.session_state.players) - team_score(team_b, st.session_state.players))
-            if diff < best_diff:
-                best_diff = diff
-        
-        # Recoger todas las combinaciones con diferencia mínima o muy cercana
-        tolerance = 1
-        for combo in itertools.combinations(players, 5):
-            team_a = list(combo)
-            team_b = [p for p in players if p not in team_a]
-            diff = abs(team_score(team_a, st.session_state.players) - team_score(team_b, st.session_state.players))
-            if diff <= best_diff + tolerance:
-                best_splits.append((team_a, team_b, diff))
-        
-        # Seleccionar aleatoriamente una de las mejores
-        team_a, team_b, actual_diff = random.choice(best_splits)
-        
-        # Calcular promedios
-        team_a_avg = compute_team_averages(team_a, df)
-        team_b_avg = compute_team_averages(team_b, df)
-        team_a_total = team_score(team_a, st.session_state.players)
-        team_b_total = team_score(team_b, st.session_state.players)
-        
-        # Guardar resultados
-        st.session_state.team_results = {
-            'team_a': team_a,
-            'team_b': team_b,
-            'team_a_avg': team_a_avg,
-            'team_b_avg': team_b_avg,
-            'team_a_total': team_a_total,
-            'team_b_total': team_b_total,
-            'actual_diff': actual_diff
-        }
-        
+            # Algoritmo de generación de equipos
+            def team_score(team, players_data):
+                return sum(sum(players_data[name].values()) for name in team)
+            
+            def compute_team_averages(team, df):
+                team_data = df.loc[team]
+                return team_data.mean()
+            
+            players = list(st.session_state.players.keys())
+            df = pd.DataFrame.from_dict(st.session_state.players, orient='index')
+            
+            best_diff = float('inf')
+            best_splits = []
+            
+            # Encontrar la mejor combinación
+            for combo in itertools.combinations(players, 5):
+                team_a = list(combo)
+                team_b = [p for p in players if p not in team_a]
+                diff = abs(team_score(team_a, st.session_state.players) - team_score(team_b, st.session_state.players))
+                if diff < best_diff:
+                    best_diff = diff
+            
+            # Recoger todas las combinaciones con diferencia mínima o muy cercana
+            tolerance = 1
+            for combo in itertools.combinations(players, 5):
+                team_a = list(combo)
+                team_b = [p for p in players if p not in team_a]
+                diff = abs(team_score(team_a, st.session_state.players) - team_score(team_b, st.session_state.players))
+                if diff <= best_diff + tolerance:
+                    best_splits.append((team_a, team_b, diff))
+            
+            # Seleccionar aleatoriamente una de las mejores
+            team_a, team_b, actual_diff = random.choice(best_splits)
+            
+            # Calcular promedios
+            team_a_avg = compute_team_averages(team_a, df)
+            team_b_avg = compute_team_averages(team_b, df)
+            team_a_total = team_score(team_a, st.session_state.players)
+            team_b_total = team_score(team_b, st.session_state.players)
+            
+            # Guardar resultados
+            st.session_state.team_results = {
+                'team_a': team_a,
+                'team_b': team_b,
+                'team_a_avg': team_a_avg,
+                'team_b_avg': team_b_avg,
+                'team_a_total': team_a_total,
+                'team_b_total': team_b_total,
+                'actual_diff': actual_diff
+            }
+            
             st.success("¡Equipos generados! 🎉")
         
-                # Mostrar resultados si existen
+        # Mostrar resultados si existen
         if 'team_results' in st.session_state:
             results = st.session_state.team_results
             
